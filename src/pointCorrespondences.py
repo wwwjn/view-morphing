@@ -127,7 +127,7 @@ def automatic_point_correspondences_imshow(im1, im2):
 
 def automatic_point_correspondences(im1, im2, returntype='list'):
     # Load pre-trained facial features model
-    p = "shape_predictor_68_face_landmarks.dat"
+    p = "data/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(p)
 

@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from pointCorrespondences import automatic_point_correspondences
 from numpy.linalg import inv
+from get_corresponding_points import get_user_click, get_user_click_two_images
 
 
 def transform_points(points, H_inv):
@@ -59,6 +60,9 @@ def remove_points(points_1, points_2, remove_idx=None):
     # Remove some of the redundant poits
     if remove_idx is None:
         remove_idx = [1, 3, 5, 7, 9, 11, 13, 15, 50, 60, 61, 62, 68, 63, 64, 66, 54, 65, 56, 33, 35]
+    
+    for i in range(0, len(remove_idx)):
+        remove_idx[i] = remove_idx[i]-1
 
     points_1 = np.delete(points_1, remove_idx, 0)
     points_2 = np.delete(points_2, remove_idx, 0)
@@ -205,20 +209,38 @@ def insert_points(subdiv, p_list):
     :param p_list: list of points
     """
     for i in p_list:
-        subdiv.insert(tuple(i))
+        subdiv.insert(tuple(i.tolist()))
 
 
 if __name__ == '__main__':
-    image1 = cv2.imread('data/einstein1.jpg')
-    image2 = cv2.imread('data/einstein3.jpg')
-    filename = 'einstein'
+    image1 = cv2.imread('data/frame.0079.color.jpg')
+    image2 = cv2.imread('data/frame.0084.color.jpg')
+    filename = 'frame_test_1'
     print(image1.shape)
 
     # Get points with dlib facial feature point detector
-    points_1, points_2 = automatic_point_correspondences(image1, image2)
+    # points_1, points_2 = automatic_point_correspondences(image1, image2)
+    
+    # get points by user click
+    # points_1 = get_user_click(path='data/einstein1.jpg')
+    # points_2 = get_user_click(path='data/einstein3.jpg')
+    
+    # points for einstein
+    # points_1 = [[73, 60], [88, 27], [126, 16], [166, 31], [189, 56], [191, 88], [76, 104], [96, 111], [175, 109], [111, 96], [124, 69], [35, 27], [233, 20], [121, 123], [102, 141], [128, 135], [162, 140], [130, 159], [144, 170], [135, 211], [160, 206], [156, 249], [70, 234], [52, 174], [84, 155], [221, 138], [252, 148], [246, 214], [79, 190], [209, 168], [114, 250]]
+    # points_2 = [[67, 56], [86, 32], [133, 16], [173, 37], [183, 63], [178, 87], [52, 98], [80, 109], [164, 106], [112, 95], [132, 67], [41, 21], [228, 23], [132, 123], [89, 137], [130, 133], [153, 138], [124, 156], [111, 172], [96, 205], [120, 209], [103, 247], [11, 216], [6, 148], [43, 135], [176, 155], [204, 173], [183, 231], [46, 169], [176, 180], [58, 246]]
+    
+    points_1, points_2 = get_user_click_two_images(path1='data/frame.0079.color.jpg', path2='data/frame.0084.color.jpg')
+
+    points_1 = np.array(points_1)
+    points_2 = np.array(points_2)
+    print(points_1.shape)
+    print(points_2.shape)
+    print(type(points_1))
+    print(type(points_1[0]))
 
     # morph with delaunay triangulation
-    morph = delaunay_triangulation(image1, image2, points_1, points_2, morphshape=image1.shape, removepoints=True, alph=0)
+    morph = delaunay_triangulation(image1, image2, points_1, points_2, 
+        morphshape=image1.shape, removepoints=False, alph=0)
 
     i = 0
     step_size = 0.25
@@ -232,7 +254,7 @@ if __name__ == '__main__':
             i += step_size
             if i > 1:
                 i = 1
-            morph = delaunay_triangulation(image1, image2, points_1, points_2, morphshape=image1.shape, removepoints=True, alph=i)
+            morph = delaunay_triangulation(image1, image2, points_1, points_2, morphshape=image1.shape, removepoints=False, alph=i)
             print("i: {:.2f}".format(i))
 
         # P: previous morph
@@ -240,7 +262,7 @@ if __name__ == '__main__':
             i -= step_size
             if i < 0:
                 i = 0
-            morph = delaunay_triangulation(image1, image2, points_1, points_2, morphshape=image1.shape, removepoints=True, alph=i)
+            morph = delaunay_triangulation(image1, image2, points_1, points_2, morphshape=image1.shape, removepoints=False, alph=i)
             print("i: {:.2f}".format(i))
 
         # S: save image
